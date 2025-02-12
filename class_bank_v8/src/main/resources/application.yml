@@ -29,12 +29,12 @@ spring:
     # username: root
     # password: asd123
 
-#  sql:
-#    init:
-#      schema-locations:
-#        - classpath:db/table.sql # 데이터베이스 테이블 생성 스크립트 위치
-#      data-locations:
-#        - classpath:db/data.sql # 초기 데이터 삽입 스크립트 위치
+  sql:
+    init:
+      schema-locations:
+        - classpath:db/table.sql # 데이터베이스 테이블 생성 스크립트 위치
+      data-locations:
+        - classpath:db/data.sql # 초기 데이터 삽입 스크립트 위치
 
   h2:
     console:
