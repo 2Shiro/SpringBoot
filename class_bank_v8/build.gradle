@@ -1,0 +1,57 @@
+plugins {
+	id 'java'
+	id 'war'
+	id 'org.springframework.boot' version '3.2.8'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// JSP 및 JSTL 지원을 위한 의존성
+	implementation 'org.apache.tomcat.embed:tomcat-embed-jasper' // JSP 실행을 위한 Tomcat Jasper
+	implementation group: 'org.glassfish.web', name: 'jakarta.servlet.jsp.jstl', version: '3.0.0' // JSTL 지원
+	// 서블릿 API (Spring Boot 3.x 이상에서는 Jakarta EE 사용)
+	compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0' // 최신 버전으로 변경
+	// 암호화 지원
+	implementation 'org.springframework.security:spring-security-crypto'
+	// Spring Boot 웹 애플리케이션 기본 라이브러리 (내장 Tomcat 포함)
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	// MyBatis (SQL 매퍼 프레임워크) - SQL과 Java 객체 간 매핑을 지원
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+	// Lombok (코드 자동 생성 도구, Getter/Setter, 생성자 자동 생성)
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	// 개발 시 편리한 기능 제공 (자동 리로드, 핫 스왑)
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	// H2 데이터베이스 (인메모리 및 파일 DB 지원)
+	runtimeOnly 'com.h2database:h2' // 애플리케이션 실행 시 H2 사용
+	testImplementation 'com.h2database:h2' // 테스트 환경에서도 H2 사용 가능
+	// MySQL 데이터베이스 드라이버 - MySQL DB 연결 시 필요
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	// 테스트용 Spring Boot 기본 라이브러리 (JUnit 포함)
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	// MyBatis 전용 테스트 라이브러리
+	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
