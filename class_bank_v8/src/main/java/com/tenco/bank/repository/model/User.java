@@ -1,11 +1,10 @@
 package com.tenco.bank.repository.model;
 
-import java.sql.Timestamp;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.security.Timestamp;
 
 @Data
 @Builder
@@ -17,4 +16,11 @@ public class User {
     private String password;
     private String fullname;
     private Timestamp createdAt;
+    private String uploadFileName;
+
+    public String setUpUserImage() {
+        return uploadFileName == null ?
+                "https://picsum.photos/id/237/350"
+                : "/images/uploads/" + uploadFileName;
+    }
 }

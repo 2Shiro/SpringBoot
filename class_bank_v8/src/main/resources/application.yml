@@ -45,12 +45,12 @@ spring:
       enabled: always # 콘솔 출력에 ANSI 색상 코드 사용 가능하도록 설정
 
 # MyBatis 설정
-#mybatis:
-#  mapper-locations:
-#    - classpath:mapper/**/*.xml # MyBatis 매퍼 파일 경로 설정 (모든 XML 매퍼 파일 포함)
-#  configuration:
-#    map-underscore-to-camel-case: true # 데이터베이스의 언더스코어 네이밍을 카멜 케이스로 자동 매핑
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # MyBatis SQL 로그를 콘솔에 출력
+mybatis:
+  mapper-locations:
+    - classpath:mapper/**/*.xml # MyBatis 매퍼 파일 경로 설정 (모든 XML 매퍼 파일 포함)
+  configuration:
+    map-underscore-to-camel-case: true # 데이터베이스의 언더스코어 네이밍을 카멜 케이스로 자동 매핑
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # MyBatis SQL 로그를 콘솔에 출력
 
 # 로깅 설정
 logging:
