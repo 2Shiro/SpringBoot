@@ -2,6 +2,7 @@ package com.tenco.bank.controller;
 
 import com.tenco.bank.dto.AccountSaveDTO;
 import com.tenco.bank.dto.DepositDTO;
+import com.tenco.bank.dto.TransferDTO;
 import com.tenco.bank.dto.WithdrawalDTO;
 import com.tenco.bank.handler.exception.DataDeliveryException;
 import com.tenco.bank.handler.exception.UnAuthorizedException;
@@ -190,6 +191,64 @@ public class AccountController {
 
         return "redirect:/account/list";
 
+    }
+
+    //
+    @GetMapping("/transfer")
+    public String transferPage() {
+        // 인증검사
+        User pricipal = (User) session.getAttribute(Define.PRINCIPAL);
+//        if(pricipal == null) {
+//            throw new UnAuthorizedException(Define.ENTER_YOUR_LOGIN, HttpStatus.UNAUTHORIZED);
+//        }
+
+        return "/account/transfer";
+    }
+
+    @PostMapping("/transfer")
+    public String transferProc(TransferDTO dto) {
+
+        System.out.println(dto.toString());
+
+        // 인증검사
+        User pricipal = (User) session.getAttribute(Define.PRINCIPAL);
+        if(pricipal == null) {
+            throw new UnAuthorizedException(Define.ENTER_YOUR_LOGIN, HttpStatus.UNAUTHORIZED);
+        }
+
+        // 유효성 검사
+        if(dto.getAmount() == null) {
+            throw new DataDeliveryException(Define.ENTER_YOUR_BALANCE, HttpStatus.BAD_REQUEST);
+        }
+
+        if(dto.getAmount() <= 0) {
+            throw new DataDeliveryException(Define.ENTER_YOUR_BALANCE, HttpStatus.BAD_REQUEST);
+        }
+
+        // 3. 출금 계좌번호 입력 여부 확인
+        if(dto.getWAccountNumber() == null || dto.getWAccountNumber().isEmpty()) {
+            throw new DataDeliveryException("출금 계좌 번호를 입력하시오", HttpStatus.BAD_REQUEST);
+        }
+
+        // 4. 출금 계좌 비밀번호 입력 여부 확인
+        if(dto.getPassword() == null || dto.getPassword().isEmpty()) {
+            throw new DataDeliveryException("출금 계좌 비밀번호를 입력하시오", HttpStatus.BAD_REQUEST);
+        }
+
+        // 5. 입금 계좌 입력 여부 확인
+        if(dto.getDAccountNumber() == null || dto.getDAccountNumber().isEmpty()) {
+            throw new DataDeliveryException("입금 계좌를 입력하시오", HttpStatus.BAD_REQUEST);
+        }
+
+        // 6. 같은 계좌 입력인지 확인
+        if(dto.getWAccountNumber().equals(dto.getDAccountNumber())) {
+            throw new DataDeliveryException("같은 계좌로 이체할 수 없습니다", HttpStatus.BAD_REQUEST);
+        }
+
+        // 서비스 호출
+        accountService.updateAccountTransfer(dto, pricipal.getId());
+
+        return "redirect:/account/list";
     }
 
 }

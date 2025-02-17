@@ -2,6 +2,7 @@ package com.tenco.bank.service;
 
 import com.tenco.bank.dto.AccountSaveDTO;
 import com.tenco.bank.dto.DepositDTO;
+import com.tenco.bank.dto.TransferDTO;
 import com.tenco.bank.dto.WithdrawalDTO;
 import com.tenco.bank.handler.exception.DataDeliveryException;
 import com.tenco.bank.handler.exception.RedirectException;
@@ -135,5 +136,58 @@ public class AccountService {
         if (rowResultCount != 1) {
             throw new DataDeliveryException(Define.FAILED_PROCESSING, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    // 이체 기능 처리
+    // 01. 트랜잭션 처리
+    public void updateAccountTransfer(TransferDTO dto, Integer pricipalId) {
+
+        Account withdrawAccount = accountRepository.findByNumber(dto.getWAccountNumber());
+        // 02. 출금 계좌 존재 여부 확인 --> select
+        if(withdrawAccount == null) {
+            throw new DataDeliveryException(Define.NOT_EXIST_ACCOUNT, HttpStatus.BAD_REQUEST);
+        }
+
+        // 03. 출금 계좌 본인 소유 여부 확인 --> 객체 상태 값
+        withdrawAccount.checkOwner(pricipalId);
+
+        // 04. 출금 계좌 비밀번호 확인 --> 객체 상태 값
+        withdrawAccount.checkPassword(dto.getPassword());
+
+        // 05. 출금 계좌 잔액 여부 확인 --> 객체 상태 값
+        withdrawAccount.checkBalance(dto.getAmount());
+
+        // 06. 입금 계좌 존재 여부 확인 --> select
+        Account depositAccount = accountRepository.findByNumber(dto.getDAccountNumber());
+        if(depositAccount == null) {
+            throw new DataDeliveryException("상대방의 계좌 번호가 없습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        // 07. 출금 계좌 잔액 수정 --> 객체 상태 값
+        withdrawAccount.withdraw(dto.getAmount());
+
+        // 08. 출금 계좌 잔액 수정 --> update
+        accountRepository.updateById(withdrawAccount);
+
+        // 09. 입금 계좌 객체 상태 변경 --> 객체 상태 값
+        depositAccount.deposit(dto.getAmount());
+
+        // 10. 입금 계좌 잔액 변경 --> update
+        accountRepository.updateById(depositAccount);
+
+        // 11. 거래 내역 등록 처리 --> insert
+        History history = History.builder()
+                .amount(dto.getAmount())
+                .wAccountId(withdrawAccount.getId())
+                .dAccountId(depositAccount.getId())
+                .wBalance(withdrawAccount.getBalance())
+                .dBalance(depositAccount.getBalance())
+                .build();
+
+        int resultRowCount = historyRepository.insert(history);
+        if(resultRowCount != 1) {
+            throw new DataDeliveryException(Define.FAILED_PROCESSING, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 }
