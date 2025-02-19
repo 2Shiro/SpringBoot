@@ -20,4 +20,10 @@ public interface AccountRepository {
     // 어노테이션을 활용할 수 있습니다.
     // 2개 이상에 파라미터을 설계한다면 반드시 @Param 어노테이션을 지정해 주세요
     public List<Account> findAllByUserId(@Param("userId") Integer principalId);
+
+    // 코드 추가
+    // Account PK 로 조회 하는 기능
+    public Account findByAccountId(Integer accountId);
+
+
 }

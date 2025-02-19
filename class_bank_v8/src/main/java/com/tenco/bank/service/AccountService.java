@@ -1,9 +1,6 @@
 package com.tenco.bank.service;
 
-import com.tenco.bank.dto.AccountSaveDTO;
-import com.tenco.bank.dto.DepositDTO;
-import com.tenco.bank.dto.TransferDTO;
-import com.tenco.bank.dto.WithdrawalDTO;
+import com.tenco.bank.dto.*;
 import com.tenco.bank.handler.exception.DataDeliveryException;
 import com.tenco.bank.handler.exception.RedirectException;
 import com.tenco.bank.repository.interfaces.AccountRepository;
@@ -16,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -138,56 +136,100 @@ public class AccountService {
         }
     }
 
-    // 이체 기능 처리
-    // 01. 트랜잭션 처리
-    public void updateAccountTransfer(TransferDTO dto, Integer pricipalId) {
 
+    /**
+     * 이체 기능 처리
+     * @param dto
+     * @param principalId
+     */
+    // 1. 트랜잭션 처리
+    // 2. 출금 계좌 존재 여부 확인 --> select
+    // 3. 출금 계좌 본인 소유 여부 확인 --> 객체 상태 값
+    // 4. 출금 계좌 비밀번호 확인  --> 객체 상태 값
+    // 5. 출금 계좌 잔액 여부 확인 --> 객체 상태 값
+    // 6. 입금 계좌 존재 여부 확인 --> select
+    // 7. 출금 계좌 잔액 수정 -->  객체 상태 값
+    // 8. 출금 계좌 잔액 수정 -->  update
+    // 9. 입금 계좌 객체 상태 변경 --> 객체 상태 값
+    // 10. 입금 계좌 잔액 변경 --> update
+    // 11. 거래 내역 등록 처리 --> insert 처리
+    @Transactional
+    public void updateAccountTransfer(TransferDTO dto, Integer principalId) {
         Account withdrawAccount = accountRepository.findByNumber(dto.getWAccountNumber());
-        // 02. 출금 계좌 존재 여부 확인 --> select
+        // 2. 출금 계좌 존재 여부 확인 --> select
         if(withdrawAccount == null) {
             throw new DataDeliveryException(Define.NOT_EXIST_ACCOUNT, HttpStatus.BAD_REQUEST);
         }
-
-        // 03. 출금 계좌 본인 소유 여부 확인 --> 객체 상태 값
-        withdrawAccount.checkOwner(pricipalId);
-
-        // 04. 출금 계좌 비밀번호 확인 --> 객체 상태 값
+        // 3. 출금 계좌 본인 소유 여부 확인 --> 객체 상태 값
+        withdrawAccount.checkOwner(principalId);
+        // 4. 출금 계좌 비밀번호 확인  --> 객체 상태 값
         withdrawAccount.checkPassword(dto.getPassword());
-
-        // 05. 출금 계좌 잔액 여부 확인 --> 객체 상태 값
+        // 5. 출금 계좌 잔액 여부 확인 --> 객체 상태 값
         withdrawAccount.checkBalance(dto.getAmount());
-
-        // 06. 입금 계좌 존재 여부 확인 --> select
+        // 6. 입금 계좌 존재 여부 확인 --> select
         Account depositAccount = accountRepository.findByNumber(dto.getDAccountNumber());
         if(depositAccount == null) {
-            throw new DataDeliveryException("상대방의 계좌 번호가 없습니다.", HttpStatus.BAD_REQUEST);
+            throw new DataDeliveryException("상태방의 계좌 번호가 없습니다.", HttpStatus.BAD_REQUEST);
         }
-
-        // 07. 출금 계좌 잔액 수정 --> 객체 상태 값
+        // 7. 출금 계좌 잔액 수정 -->  객체 상태 값
         withdrawAccount.withdraw(dto.getAmount());
-
-        // 08. 출금 계좌 잔액 수정 --> update
+        // 8. 출금 계좌 잔액 수정 -->  update
         accountRepository.updateById(withdrawAccount);
-
-        // 09. 입금 계좌 객체 상태 변경 --> 객체 상태 값
+        // 9. 입금 계좌 객체 상태 변경 --> 객체 상태 값
         depositAccount.deposit(dto.getAmount());
-
         // 10. 입금 계좌 잔액 변경 --> update
         accountRepository.updateById(depositAccount);
-
-        // 11. 거래 내역 등록 처리 --> insert
+        // 11. 거래 내역 등록 처리 --> insert 처리
         History history = History.builder()
-                .amount(dto.getAmount())
-                .wAccountId(withdrawAccount.getId())
-                .dAccountId(depositAccount.getId())
-                .wBalance(withdrawAccount.getBalance())
-                .dBalance(depositAccount.getBalance())
+                .amount(dto.getAmount()) // 이체 금액
+                .wAccountId(withdrawAccount.getId()) // 출금 계좌 PK
+                .dAccountId(depositAccount.getId())  // 입금 계좌 PK
+                .wBalance(withdrawAccount.getBalance()) // 출금 계좌 잔액(그 시점)
+                .dBalance(depositAccount.getBalance()) // 입금 계좌 잔액 (그 시점)
                 .build();
 
-        int resultRowCount = historyRepository.insert(history);
-        if(resultRowCount != 1) {
+         int resultRowCount = historyRepository.insert(history);
+         if(resultRowCount != 1) {
             throw new DataDeliveryException(Define.FAILED_PROCESSING, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+         }
+    }
 
+    /**
+     * 단일 계좌 조회 기능
+     * @param accountId
+     * @return
+     */
+    public Account readAccountId(Integer accountId) {
+        Account account =  accountRepository.findByAccountId(accountId);
+        if(account == null) {
+            throw new DataDeliveryException(Define.NOT_EXIST_ACCOUNT,
+                    HttpStatus.BAD_REQUEST);
+        }
+        return  account;
+    }
+
+    /**
+     * 단일 계좌 거래 내역 조회
+     * @param type [all, deposit, withdrawal]
+     * @param accountId (pk)
+     * @return 입금, 출금, 입출금 거래내역 (3가지 타입으로 반환 처리)
+     */
+    public List<HistoryAccountDTO> readHistoryByAccountId(String type, Integer accountId, int page, int size) {
+        List<HistoryAccountDTO> list = new ArrayList<>();
+        // limit 변수, offset 변수
+        int limit = size;
+        int offset = (page - 1) * size;
+        list = historyRepository.findByAccountIdAndTypeOfHistory(type, accountId, limit, offset);
+        return list;
+    }
+
+    /**
+     * 단일 해당 계좌와 거래 유형에 따른 전체 레코드 수를 반환하는 메서드
+     * @param type
+     * @param accountId
+     * @return int
+     */
+    public int countHistoryByAccountAndType(String type, Integer accountId) {
+        return historyRepository.countHistoryAccountIdAndType(type, accountId);
     }
 }

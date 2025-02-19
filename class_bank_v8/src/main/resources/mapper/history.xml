@@ -40,5 +40,70 @@
         select * from history_tb
     </select>
 
+    <select id="findByAccountIdAndTypeOfHistory" resultType="com.tenco.bank.dto.HistoryAccountDTO">
+        <if test="type == 'all'">
+            SELECT
+            h.id,
+            h.amount,
+            CASE
+            WHEN h.w_account_id = #{accountId} THEN (h.w_balance)
+            WHEN h.d_account_id = #{accountId} THEN (h.d_balance)
+            END AS balance,
+            COALESCE(CAST(wa.number AS CHAR(10)), 'ATM') as sender,
+            COALESCE(CAST(da.number AS CHAR(10)), 'ATM') as receiver,
+            h.created_at
+            FROM  history_tb AS h
+            LEFT JOIN account_tb AS da ON h.d_account_id = da.id
+            LEFT JOIN account_tb AS wa ON h.w_account_id = wa.id
+            WHERE h.d_account_id = #{accountId} OR h.w_account_id = #{accountId}
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+        <if test="type == 'withdrawal'">
+            SELECT
+            h.id, h.amount, h.w_balance AS balance, h.created_at,
+            COALESCE(CAST(da.number AS CHAR(10)), 'ATM') as receiver,
+            wa.number as sender
+            FROM history_tb AS h
+            LEFT JOIN account_tb AS wa ON wa.id = h.w_account_id
+            LEFT JOIN account_tb AS da ON da.id = h.d_account_id
+            WHERE h.w_account_id = #{accountId}
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+        <if test="type == 'deposit'">
+            SELECT
+            h.id, h.amount, h.d_balance as balance , h.created_at,
+            COALESCE(CAST(wa.number AS CHAR(10)), 'ATM') as sender,
+            da.number as receiver
+            FROM history_tb AS h
+            LEFT JOIN  account_tb AS da ON da.id = h.d_account_id
+            LEFT JOIN  account_tb AS wa ON wa.id = h.w_account_id
+            WHERE h.d_account_id = #{accountId}
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countHistoryAccountIdAndType" resultType="int">
+        <if test="type == 'all'">
+            SELECT count(*)
+            FROM  history_tb AS h
+            LEFT JOIN account_tb AS da ON h.d_account_id = da.id
+            LEFT JOIN account_tb AS wa ON h.w_account_id = wa.id
+            WHERE h.d_account_id = #{accountId} OR h.w_account_id = #{accountId};
+        </if>
+        <if test="type == 'withdrawal'">
+            SELECT count(*)
+            FROM history_tb AS h
+            LEFT JOIN account_tb AS wa ON wa.id = h.w_account_id
+            LEFT JOIN account_tb AS da ON da.id = h.d_account_id
+            WHERE h.w_account_id = #{accountId}
+        </if>
+        <if test="type == 'deposit'">
+            SELECT count(*)
+            FROM history_tb AS h
+            LEFT JOIN  account_tb AS da ON da.id = h.d_account_id
+            LEFT JOIN  account_tb AS wa ON wa.id = h.w_account_id
+            WHERE h.d_account_id = #{accountId}
+        </if>
+    </select>
 
 </mapper>

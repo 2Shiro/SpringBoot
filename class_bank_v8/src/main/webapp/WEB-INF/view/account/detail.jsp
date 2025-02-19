@@ -32,11 +32,11 @@
 			<tbody>
 				<c:forEach var="historyAccount" items="${historyList}">
 				<tr>
-					<th>${historyAccount.timestampToString(historyAccount.createdAt)}</th>
+					<th>${historyAccount.createdAt}</th>
 					<th>${historyAccount.sender}</th>
 					<th>${historyAccount.receiver}</th>
-					<th>${historyAccount.formatKoreanWon(historyAccount.amount)}</th>
-					<th>${historyAccount.formatKoreanWon(historyAccount.balance)}</th>
+					<th>${historyAccount.amount}</th>
+					<th>${historyAccount.balance}</th>
 				</tr>
 				
 				</c:forEach>
