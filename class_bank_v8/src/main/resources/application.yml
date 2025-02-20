@@ -61,3 +61,7 @@ logging:
 # 사용자 정의 설정
 tenco:
   key: 54d5cb2d332dbdb4850293caae4559ce88b65163f1ea5d4e4b3ac49d772ded14 # (API 키 예제, 실제 사용 시 보안에 주의)
+
+# 초기 파라메터를 설정
+file:
+  upload-dir: C:\\work_spring\\upload/

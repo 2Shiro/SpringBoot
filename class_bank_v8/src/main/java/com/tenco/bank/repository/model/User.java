@@ -15,8 +15,9 @@ public class User {
     private String username;
     private String password;
     private String fullname;
-    private Timestamp createdAt;
     private String uploadFileName;
+    private String originFileName;
+    private Timestamp createdAt;
 
     public String setUpUserImage() {
         return uploadFileName == null ?

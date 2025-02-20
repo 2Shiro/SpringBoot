@@ -4,7 +4,10 @@ package com.tenco.bank.config;
 
 import com.tenco.bank.handler.AuthInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -24,4 +27,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/account/**")
                 .addPathPatterns("/auth/**");
     }
+
+    // Bean 객체 만들기
+    @Bean // IOC 대상
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+
 }

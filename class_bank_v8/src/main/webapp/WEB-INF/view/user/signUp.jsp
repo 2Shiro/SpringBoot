@@ -19,7 +19,7 @@
 			<label for="fullname">fullname:</label> <input type="text" class="form-control" placeholder="Enter fullname" id="fullname" name="fullname" value="바람검객">
 		</div>
 		<div class="custom-file">
-			<input type="file" class="custom-file-input" id="customFile" name="mFile">
+			<input type="file" class="custom-file-input" id="customFile" name="customFile">
 			<label class="custom-file-label"  for="customFile">Choose file</label>
 		</div>
 		<br>
@@ -27,7 +27,7 @@
 			<button type="submit" class="btn btn-primary mt-md-4">회원가입</button>
 		</div>
 		<div>
-			<a href="https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=21625653d6c77548fa54d359f8707123&redirect_uri=http://localhost:8080/user/kakao">
+			<a href="https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=bbd20ecd57a59c85e3ed9b4c1fd55753&redirect_uri=http://localhost:8080/user/kakao">
 			 <img alt="소셜로그인이미지" src="/images/kakao_login_small.png">
 			</a>
 		</div>
