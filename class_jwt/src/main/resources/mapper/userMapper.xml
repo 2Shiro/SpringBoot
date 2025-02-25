@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tenco.class_jwt.mapper.UserMapper">
+
+    <!--  회원가입  -->
+    <insert id="save" parameterType="com.tenco.class_jwt.domain.User">
+        INSERT INTO users(username, password, refresh_token)
+        VALUES (#{username}, #{password}, #{refreshToken})
+    </insert>
+
+    <!--  회원 조회  -->
+    <select id="findByUsername" resultType="com.tenco.class_jwt.domain.User">
+        SELECT * FROM users WHERE username = #{username}
+    </select>
+
+    <!--  리프레시 토큰 업데이트  -->
+    <update id="updateRefreshToken" parameterType="com.tenco.class_jwt.domain.User">
+        UPDATE users SET refresh_token = #{refreshToken}
+        WHERE username = #{username}
+    </update>
+
+</mapper>

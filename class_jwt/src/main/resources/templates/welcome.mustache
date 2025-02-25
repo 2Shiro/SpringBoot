@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<h2>환영해 {{username}}</h2>
+<p> 액세트 토큰 : {{accessToken}} </p>
+<p> 리플레쉬 토큰 : {{refreshToken}} </p>
+
+<!--  SSR 액세트 유효 시간 10분  -->
+<form method="post" action="/refresh">
+    <input type="hidden" name="refreshToken" value="{{refreshToken}}" >
+    <input type="submit" value="수동 토큰 갱신">
+</form>
+
+<!--  로그아웃 버튼  -->
+<form method="post" action="/logout">
+    <input type="hidden" name="refreshToken" value="{{refreshToken}}" >
+    <input type="submit" value="로그아웃">
+</form>
+
+<!-- 자동 토큰 갱신 스크립트  -->
+<script>
+    const refreshToken = "{{refreshToken}}";
+        const initialAccessToken = "{{accessToken}}";
+
+        async function refreshAccessToken() {
+            try {
+                await fetch('/refresh', {
+                    method: 'POST',
+                    headers: {'Content-type' : 'application/x-www-form-urlencoded'},
+                    body: 'refreshToken=' + encodeURIComponent(refreshToken)
+                    document.body.innerHTML = html; // 페이지 갱신 처리
+                });
+            } catch(error) {
+                console.error(error);
+                window.location.href = "/login"; // 실패 시 로그인 페이지로 이동
+            }
+        }
+
+        // 호출 - setTimeout 단 한번 실행 됨
+        // setTimeout(refreshAccessToken, 1000 * 3);
+
+        // 3초마다 계속 호출
+        setInterval(refreshAccessToken, 1000 * 3);
+</script>
+</body>
+</html>
